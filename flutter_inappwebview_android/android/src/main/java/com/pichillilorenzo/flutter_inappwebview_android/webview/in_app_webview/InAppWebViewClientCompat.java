@@ -230,11 +230,15 @@ public class InAppWebViewClientCompat extends WebViewClientCompat {
       inAppBrowserDelegate.didFinishNavigation(url);
     }
 
-    // WebView not storing cookies reliable to local device storage
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      CookieManager.getInstance().flush();
-    } else {
-      CookieSyncManager.getInstance().sync();
+     try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        CookieManager.getInstance().flush();
+      } else {
+        CookieSyncManager.getInstance().sync();
+      }
+    } catch (Throwable t) {
+      // Defensive: WebView / Chromium bug
+      Log.w("InAppWebView", "Cookie flush failed", t);
     }
 
     String js = JavaScriptBridgeJS.PLATFORM_READY_JS_SOURCE;
