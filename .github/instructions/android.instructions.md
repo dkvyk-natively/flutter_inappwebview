@@ -375,7 +375,6 @@ When modifying Java code:
 
 ```bash
 cd flutter_inappwebview_android && flutter pub get
-cd example && flutter build apk --debug
 ```
 
 ## AndroidManifest Requirements

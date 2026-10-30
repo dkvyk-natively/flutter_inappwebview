@@ -1,5 +1,5 @@
 ---
-applyTo: "flutter_inappwebview/lib/**,flutter_inappwebview/example/**"
+applyTo: "flutter_inappwebview/lib/**"
 ---
 
 # App-Facing Package Instructions
@@ -18,8 +18,6 @@ This is the **public API** package that developers depend on. It wraps all platf
 
 - `lib/flutter_inappwebview.dart` - Main export file
 - `lib/src/` - Public API wrappers
-- `example/` - Example app and integration tests
-- `example/integration_test/` - Integration test suite
 
 ### Source Code Structure (`lib/src/`)
 
@@ -71,15 +69,3 @@ class MyFeature {
       PlatformMyFeature.static().isClassSupported(platform: platform);
 }
 ```
-
-## Integration Tests
-
-Located in `example/integration_test/`:
-```bash
-# Run with device/emulator
-cd flutter_inappwebview/example
-NODE_SERVER_IP=<ip> flutter driver --driver=test_driver/integration_test.dart \
-  --target=integration_test/webview_flutter_test.dart
-```
-
-Requires `test_node_server/` to be running for full test coverage.

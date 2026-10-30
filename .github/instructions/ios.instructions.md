@@ -323,7 +323,6 @@ When modifying Swift/Obj-C code:
 
 ```bash
 cd flutter_inappwebview_ios && flutter pub get
-cd example && flutter build ios --debug --no-codesign
 ```
 
 ## Info.plist Requirements

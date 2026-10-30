@@ -231,15 +231,8 @@ cd flutter_inappwebview_web && flutter pub get
 # TypeScript (if modified)
 cd web_support && npm install && npm run build
 
-# Example app
-cd flutter_inappwebview_web/example && flutter run -d chrome
 ```
 
-## Testing Considerations
-
-- Test with same-origin iframes for full functionality
-- Cross-origin iframes will have limited capabilities
-- Use `--disable-web-security` Chrome flag for development testing (not production)
 - Browser console shows CORS errors for blocked operations
 
 ## Debugging & Inspection

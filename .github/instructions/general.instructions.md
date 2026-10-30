@@ -47,17 +47,6 @@ cd flutter_inappwebview && dart analyze
 npm run format # or npm run format:windows for Windows only
 ```
 
-### Unit Tests
-```bash
-cd flutter_inappwebview && flutter test
-```
-
-### Integration Tests (Requires Device + Node Server)
-```bash
-cd flutter_inappwebview/example
-NODE_SERVER_IP=<ip> flutter driver --driver=test_driver/integration_test.dart --target=integration_test/webview_flutter_test.dart
-```
-
 ---
 
 ## Architecture Overview
@@ -123,26 +112,22 @@ When implementing platform-specific features, consult the official API documenta
 1. Update or add the contract inside `flutter_inappwebview_platform_interface`.
 2. Run `npm run build` (or the equivalent `build_runner` command) to regenerate annotated files.
 3. Mirror the new contract in every federated implementation under `flutter_inappwebview_<platform>/lib/src/inappwebview_platform.dart` (returning stub implementations for unsupported platforms).
-4. Wire the public API in `flutter_inappwebview/` (controllers, widgets, helpers) and update the example app if the feature is user-facing.
-5. Add or update tests/analyzer coverage where possible.
-6. Update documentation (README, docs site) and add changelog entries for every package you touched (interface, each platform, public plugin, etc.).
-7. Re-run `dart analyze`/`flutter test` in the affected packages before sending the PR.
+4. Wire the public API in `flutter_inappwebview/` (controllers, widgets, helpers).
+5. Update documentation (README and docs site) and add changelog entries for every package you touched (interface, each platform, public plugin, etc.).
+6. Re-run `dart analyze` in the affected packages before sending the PR.
 
-## Testing & Validation
-- **Run Tests**: Run `flutter test` inside the relevant package before suggesting changes.
+## Static Analysis
 - **Analyze**: For analyzer-only updates, run `dart analyze` and ensure `analysis_options.yaml` lints stay satisfied.
 - **Contract Updates**: When touching `platform_interface` contracts, explicitly explain how downstream packages must be updated and list the follow-up steps.
-- **Integration Tests**: Live under `flutter_inappwebview/example/integration_test` and can be executed via `scripts/test_and_log.sh` (accepts optional `NODE_SERVER_IP` and `DEVICE_ID`).
 
 ## Documentation & Examples
-- **Update Docs**: Update `README.md`, `doc/`, or example apps when you expose new public APIs.
+- **Update Docs**: Update `README.md`, `doc/`,  when you expose new public APIs.
 - **Snippets**: Show simple snippets that exercise the new API on supported platforms only.
 - **Changelog**: Keep changelog entries scoped under the correct package (e.g., `flutter_inappwebview/CHANGELOG.md`).
   - If a change spans multiple packages, add a short entry to each relevant `CHANGELOG.md` so consumers of standalone packages understand what changed.
 
 ## Pull Request Tips
 - **Title**: Reference the federated package you changed in the PR title (e.g., `[flutter_inappwebview] Add PrintJobController helpers`).
-- **Testing Instructions**: Call out any manual steps required for testers (running example app, enabling permissions, etc.).
 - **Platform Parity**: Mention unsupported platforms explicitly instead of assuming parity.
 
 ## NPM Scripts
