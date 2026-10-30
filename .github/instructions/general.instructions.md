@@ -8,11 +8,11 @@ You are an expert Flutter and Dart plugin developer working on this federated We
 
 ## Repository Summary
 
-**flutter_inappwebview** is a multi-platform Flutter plugin providing inline WebView, headless WebView, and in-app browser capabilities across Android, iOS, macOS, Windows, Linux, and Web.
+**flutter_inappwebview** is a multi-platform Flutter plugin providing inline WebView, headless WebView, and in-app browser capabilities across Android, iOS, and Web.
 
 | Aspect | Details |
 |--------|---------|
-| Languages | Dart, Java (Android), Swift/Obj-C (iOS/macOS), C++ (Windows/Linux), JavaScript (Web) |
+| Languages | Dart, Java (Android), Swift/Obj-C (iOS), JavaScript (Web) |
 | Framework | Flutter ≥3.32.0, Dart SDK ^3.8.0 |
 | Build Tools | `flutter`, `dart`, `build_runner`, npm scripts |
 
@@ -71,7 +71,7 @@ This repository follows the **Federated Plugin** architecture:
   - Contains pure Dart contracts, typedefs, enums, and shared utilities.
   - Defines the `PlatformInterface` that all platform packages must implement.
   - **Crucial**: Anything added to the public API (`flutter_inappwebview`) MUST rely on or extend these definitions. DO NOT duplicate platform logic in the public package.
-- **`flutter_inappwebview_<platform>/`**: The **platform implementation packages** (Android, iOS, macOS, Windows, Linux, Web).
+- **`flutter_inappwebview_<platform>/`**: The **platform implementation packages** (Android, iOS, Web).
   - These packages implement the abstract classes defined in `flutter_inappwebview_platform_interface`.
   - They contain platform-specific code (Dart and native: Java, Obj-C/Swift, C++, JavaScript).
   - Keep their APIs strictly aligned with the `platform_interface` layer.
@@ -92,9 +92,7 @@ When implementing platform-specific features, consult the official API documenta
 | Platform | API Documentation | Main Classes |
 |----------|-------------------|--------------|
 | **Android** | [Android WebView](https://developer.android.com/reference/android/webkit/WebView) and [androidx.webkit](https://developer.android.com/reference/androidx/webkit/package-summary) | `WebView`, `WebViewClient`, `WebChromeClient`, `WebSettings`, `CookieManager` |
-| **iOS/macOS** | [WebKit](https://developer.apple.com/documentation/webkit) | `WKWebView`, `WKNavigationDelegate`, `WKUIDelegate`, `WKWebViewConfiguration`, `WKUserContentController` |
-| **Windows** | [WebView2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/reference/win32/) | `ICoreWebView2`, `ICoreWebView2Controller`, `ICoreWebView2Settings`, `ICoreWebView2Environment` |
-| **Linux** | [WPE WebKit 2.0](https://wpewebkit.org/reference/stable/wpe-webkit-2.0/) | `WebKitWebView`, `WebKitSettings`, `WebKitUserContentManager`, `WebKitCookieManager`, `WebKitWebsiteDataManager` |
+| **iOS** | [WebKit](https://developer.apple.com/documentation/webkit) | `WKWebView`, `WKNavigationDelegate`, `WKUIDelegate`, `WKWebViewConfiguration`, `WKUserContentController` |
 | **Web** | [HTMLIFrameElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLIFrameElement) | `HTMLIFrameElement`, `postMessage`, `Window` |
 
 ## Coding Guidelines
@@ -226,23 +224,11 @@ Make sure to acquire the instructions before making any changes to the code.
 <description>iOS platform implementation details (Swift/Obj-C). Use this as reference when implementing iOS-specific features.</description>
 </instruction>
 <instruction>
-<file>.github/instructions/linux.instructions.md</file>
-<description>Linux platform implementation details (C++). Use this as reference when implementing Linux-specific features.</description>
-</instruction>
-<instruction>
-<file>.github/instructions/macos.instructions.md</file>
-<description>macOS platform implementation details (Swift/Obj-C). Use this as reference when implementing macOS-specific features.</description>
-</instruction>
-<instruction>
 <file>.github/instructions/platform-interface.instructions.md</file>
 <description>Platform interface definitions and contracts. This is the starting point for any new API.</description>
 </instruction>
 <instruction>
 <file>.github/instructions/web.instructions.md</file>
 <description>Web platform implementation details (Dart/TypeScript). Use this as reference when implementing Web-specific features.</description>
-</instruction>
-<instruction>
-<file>.github/instructions/windows.instructions.md</file>
-<description>Windows platform implementation details (C++). Use this as reference when implementing Windows-specific features.</description>
 </instruction>
 

@@ -80,9 +80,9 @@ body:
       label: Operating System, Device-specific and/or Tool
       description: |
         The Operating System, Device-specific and/or Tool in which you used the plugin to face the issue.
-        For example: All platforms, Android, iOS, XCode, macOS, Windows, Web, Chrome, etc.
+        For example: All platforms, Android, iOS, XCode, Web, Chrome, etc.
         Make sure to include the version too.
-      placeholder: Android 34+, iOS 17.0+, macOS, Windows, etc.
+      placeholder: Android 34+, iOS 17.0+, etc.
     validations:
       required: true
   - type: input
