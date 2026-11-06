@@ -60,8 +60,10 @@ import com.pichillilorenzo.flutter_inappwebview_android.webview.web_message.WebM
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -72,9 +74,22 @@ public class WebViewChannelDelegate extends ChannelDelegateImpl {
   @Nullable
   private InAppWebView webView;
 
+  /**
+   * High-frequency events (scroll, over-scroll, zoom) that the Dart side has a callback for.
+   * {@code null} means "unknown" (e.g. InAppBrowser, or before the Dart controller reported),
+   * in which case every event is sent, as before.
+   */
+  @Nullable
+  private volatile Set<String> optionalEventSubscriptions = null;
+
   public WebViewChannelDelegate(@NonNull InAppWebView webView, @NonNull MethodChannel channel) {
     super(channel);
     this.webView = webView;
+  }
+
+  private boolean isOptionalEventSubscribed(@NonNull String event) {
+    Set<String> subscriptions = optionalEventSubscriptions;
+    return subscriptions == null || subscriptions.contains(event);
   }
 
   @Override
@@ -87,6 +102,12 @@ public class WebViewChannelDelegate extends ChannelDelegateImpl {
       return;
     }
     switch (method) {
+      case setOptionalEventSubscriptions: {
+        List<String> events = call.argument("events");
+        optionalEventSubscriptions = events != null ? new HashSet<>(events) : null;
+        result.success(true);
+        break;
+      }
       case getUrl:
         result.success((webView != null) ? webView.getUrl() : null);
         break;
@@ -751,6 +772,7 @@ public class WebViewChannelDelegate extends ChannelDelegateImpl {
   }
 
   public void onScrollChanged(int x, int y) {
+    if (!isOptionalEventSubscribed("onScrollChanged")) return;
     MethodChannel channel = getChannel();
     if (channel == null) return;
     Map<String, Object> obj = new HashMap<>();
@@ -772,6 +794,7 @@ public class WebViewChannelDelegate extends ChannelDelegateImpl {
   }
 
   public void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+    if (!isOptionalEventSubscribed("onOverScrolled")) return;
     MethodChannel channel = getChannel();
     if (channel == null) return;
     Map<String, Object> obj = new HashMap<>();
@@ -1133,6 +1156,7 @@ public class WebViewChannelDelegate extends ChannelDelegateImpl {
   }
 
   public void onZoomScaleChanged(float oldScale, float newScale) {
+    if (!isOptionalEventSubscribed("onZoomScaleChanged")) return;
     MethodChannel channel = getChannel();
     if (channel == null) return;
     Map<String, Object> obj = new HashMap<>();

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -291,21 +293,6 @@ class IOSInAppWebViewWidget extends PlatformInAppWebViewWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initialSettings = params.initialSettings ?? InAppWebViewSettings();
-    _inferInitialSettings(initialSettings);
-
-    Map<String, dynamic> settingsMap =
-        (params.initialSettings != null ? initialSettings.toMap() : null) ??
-        // ignore: deprecated_member_use_from_same_package
-        params.initialOptions?.toMap() ??
-        initialSettings.toMap();
-
-    Map<String, dynamic> pullToRefreshSettings =
-        params.pullToRefreshController?.params.settings.toMap() ??
-        // ignore: deprecated_member_use_from_same_package
-        params.pullToRefreshController?.params.options.toMap() ??
-        PullToRefreshSettings(enabled: false).toMap();
-
     if ((params.headlessWebView?.isRunning() ?? false) &&
         params.keepAlive != null) {
       final headlessId = params.headlessWebView?.id;
@@ -315,28 +302,50 @@ class IOSInAppWebViewWidget extends PlatformInAppWebViewWidget {
       }
     }
 
-    return UiKitView(
-      viewType: 'com.pichillilorenzo/flutter_inappwebview',
+    return _IOSInAppWebViewPlatformView(
       onPlatformViewCreated: _onPlatformViewCreated,
       gestureRecognizers: params.gestureRecognizers,
-      creationParams: <String, dynamic>{
-        'initialUrlRequest': params.initialUrlRequest?.toMap(),
-        'initialFile': params.initialFile,
-        'initialData': params.initialData?.toMap(),
-        'initialSettings': settingsMap,
-        'contextMenu': params.contextMenu?.toMap() ?? {},
-        'windowId': params.windowId,
-        'headlessWebViewId': params.headlessWebView?.isRunning() ?? false
-            ? params.headlessWebView?.id
-            : null,
-        'initialUserScripts':
-            params.initialUserScripts?.map((e) => e.toMap()).toList() ?? [],
-        'pullToRefreshSettings': pullToRefreshSettings,
-        'keepAliveId': params.keepAlive?.id,
-        'preventGestureDelay': params.preventGestureDelay,
-      },
-      creationParamsCodec: const StandardMessageCodec(),
+      creationParamsBuilder: _buildCreationParams,
     );
+  }
+
+  /// Builds the params sent to the native side when the WKWebView is created.
+  ///
+  /// Only called once per platform view (see [_IOSInAppWebViewPlatformView]):
+  /// computing it in build() serialized the whole settings object on every
+  /// rebuild of the parent widget, although UiKitView only reads it on creation.
+  Map<String, dynamic> _buildCreationParams() {
+    final initialSettings = params.initialSettings ?? InAppWebViewSettings();
+    _inferInitialSettings(initialSettings);
+
+    final Map<String, dynamic> settingsMap =
+        (params.initialSettings != null ? initialSettings.toMap() : null) ??
+        // ignore: deprecated_member_use_from_same_package
+        params.initialOptions?.toMap() ??
+        initialSettings.toMap();
+
+    final Map<String, dynamic> pullToRefreshSettings =
+        params.pullToRefreshController?.params.settings.toMap() ??
+        // ignore: deprecated_member_use_from_same_package
+        params.pullToRefreshController?.params.options.toMap() ??
+        PullToRefreshSettings(enabled: false).toMap();
+
+    return <String, dynamic>{
+      'initialUrlRequest': params.initialUrlRequest?.toMap(),
+      'initialFile': params.initialFile,
+      'initialData': params.initialData?.toMap(),
+      'initialSettings': settingsMap,
+      'contextMenu': params.contextMenu?.toMap() ?? {},
+      'windowId': params.windowId,
+      'headlessWebViewId': params.headlessWebView?.isRunning() ?? false
+          ? params.headlessWebView?.id
+          : null,
+      'initialUserScripts':
+          params.initialUserScripts?.map((e) => e.toMap()).toList() ?? [],
+      'pullToRefreshSettings': pullToRefreshSettings,
+      'keepAliveId': params.keepAlive?.id,
+      'preventGestureDelay': params.preventGestureDelay,
+    };
   }
 
   void _onPlatformViewCreated(int id) {
@@ -434,5 +443,43 @@ class IOSInAppWebViewWidget extends PlatformInAppWebViewWidget {
   T controllerFromPlatform<T>(PlatformInAppWebViewController controller) {
     // unused
     throw UnimplementedError();
+  }
+}
+
+/// Hosts the [UiKitView] and builds its creation params only once.
+///
+/// [UiKitView] reads `creationParams` only when it creates the native view, so
+/// recomputing them on every rebuild was wasted work. The params are built
+/// lazily in [State.initState] and reused for the lifetime of this state.
+class _IOSInAppWebViewPlatformView extends StatefulWidget {
+  const _IOSInAppWebViewPlatformView({
+    required this.onPlatformViewCreated,
+    required this.creationParamsBuilder,
+    this.gestureRecognizers,
+  });
+
+  final PlatformViewCreatedCallback onPlatformViewCreated;
+  final Map<String, dynamic> Function() creationParamsBuilder;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
+
+  @override
+  State<_IOSInAppWebViewPlatformView> createState() =>
+      _IOSInAppWebViewPlatformViewState();
+}
+
+class _IOSInAppWebViewPlatformViewState
+    extends State<_IOSInAppWebViewPlatformView> {
+  late final Map<String, dynamic> _creationParams =
+      widget.creationParamsBuilder();
+
+  @override
+  Widget build(BuildContext context) {
+    return UiKitView(
+      viewType: 'com.pichillilorenzo/flutter_inappwebview',
+      onPlatformViewCreated: widget.onPlatformViewCreated,
+      gestureRecognizers: widget.gestureRecognizers,
+      creationParams: _creationParams,
+      creationParamsCodec: const StandardMessageCodec(),
+    );
   }
 }

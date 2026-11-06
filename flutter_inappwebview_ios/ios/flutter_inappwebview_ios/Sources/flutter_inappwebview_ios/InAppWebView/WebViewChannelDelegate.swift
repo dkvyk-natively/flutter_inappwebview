@@ -11,12 +11,24 @@ import Flutter
 
 public class WebViewChannelDelegate: ChannelDelegate {
     private weak var webView: InAppWebView?
-    
+
+    /// High-frequency events (scroll, over-scroll, zoom, content size) that the Dart side
+    /// has a callback for. `nil` means "unknown" (e.g. InAppBrowser, or before the Dart
+    /// controller reported), in which case every event is sent, as before.
+    private var optionalEventSubscriptions: Set<String>? = nil
+
     public init(webView: InAppWebView, channel: FlutterMethodChannel) {
         super.init(channel: channel)
         self.webView = webView
     }
-    
+
+    private func isOptionalEventSubscribed(_ event: String) -> Bool {
+        guard let subscriptions = optionalEventSubscriptions else {
+            return true
+        }
+        return subscriptions.contains(event)
+    }
+
     public override func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? NSDictionary
         
@@ -26,6 +38,14 @@ public class WebViewChannelDelegate: ChannelDelegate {
         }
         
         switch method {
+        case .setOptionalEventSubscriptions:
+            if let events = arguments?["events"] as? [String] {
+                optionalEventSubscriptions = Set(events)
+            } else {
+                optionalEventSubscriptions = nil
+            }
+            result(true)
+            break
         case .getUrl:
             result(webView?.url?.absoluteString)
             break
@@ -726,11 +746,13 @@ public class WebViewChannelDelegate: ChannelDelegate {
     }
     
     public func onScrollChanged(x: Int, y: Int) {
+        if !isOptionalEventSubscribed("onScrollChanged") { return }
         let arguments: [String: Any?] = ["x": x, "y": y]
         channel?.invokeMethod("onScrollChanged", arguments: arguments)
     }
     
     public func onContentSizeChanged(oldContentSize: CGSize, newContentSize: CGSize) {
+        if !isOptionalEventSubscribed("onContentSizeChanged") { return }
         let arguments: [String: Any?] = [
             "oldContentSize": oldContentSize.toMap(),
             "newContentSize": newContentSize.toMap()
@@ -747,6 +769,7 @@ public class WebViewChannelDelegate: ChannelDelegate {
     }
     
     public func onOverScrolled(x: Int, y: Int, clampedX: Bool, clampedY: Bool) {
+        if !isOptionalEventSubscribed("onOverScrolled") { return }
         let arguments: [String: Any?] = ["x": x, "y": y, "clampedX": clampedX, "clampedY": clampedY]
         channel?.invokeMethod("onOverScrolled", arguments: arguments)
     }
@@ -1075,6 +1098,7 @@ public class WebViewChannelDelegate: ChannelDelegate {
     }
     
     public func onZoomScaleChanged(newScale: Float, oldScale: Float) {
+        if !isOptionalEventSubscribed("onZoomScaleChanged") { return }
         let arguments: [String: Any?] = [
             "newScale": newScale,
             "oldScale": oldScale

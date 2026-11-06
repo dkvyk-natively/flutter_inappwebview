@@ -8,6 +8,7 @@
 import Foundation
 
 public enum WebViewChannelDelegateMethods: String {
+    case setOptionalEventSubscriptions = "setOptionalEventSubscriptions"
     case getUrl = "getUrl"
     case getTitle = "getTitle"
     case getProgress = "getProgress"

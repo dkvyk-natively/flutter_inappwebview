@@ -1,6 +1,7 @@
 package com.pichillilorenzo.flutter_inappwebview_android.webview;
 
 public enum WebViewChannelDelegateMethods {
+  setOptionalEventSubscriptions,
   getUrl,
   getTitle,
   getProgress,

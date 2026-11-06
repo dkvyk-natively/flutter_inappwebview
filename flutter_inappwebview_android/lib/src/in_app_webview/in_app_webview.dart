@@ -296,21 +296,6 @@ class AndroidInAppWebViewWidget extends PlatformInAppWebViewWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initialSettings = params.initialSettings ?? InAppWebViewSettings();
-    _inferInitialSettings(initialSettings);
-
-    Map<String, dynamic> settingsMap =
-        (params.initialSettings != null ? initialSettings.toMap() : null) ??
-        // ignore: deprecated_member_use_from_same_package
-        params.initialOptions?.toMap() ??
-        initialSettings.toMap();
-
-    Map<String, dynamic> pullToRefreshSettings =
-        params.pullToRefreshController?.params.settings.toMap() ??
-        // ignore: deprecated_member_use_from_same_package
-        params.pullToRefreshController?.params.options.toMap() ??
-        PullToRefreshSettings(enabled: false).toMap();
-
     if ((params.headlessWebView?.isRunning() ?? false) &&
         params.keepAlive != null) {
       final headlessId = params.headlessWebView?.id;
@@ -319,12 +304,6 @@ class AndroidInAppWebViewWidget extends PlatformInAppWebViewWidget {
         params.keepAlive?.id = headlessId;
       }
     }
-
-    var useHybridComposition =
-        (params.initialSettings != null
-            ? initialSettings.useHybridComposition
-            : params.initialOptions?.android.useHybridComposition) ??
-        true;
 
     return PlatformViewLink(
       key: params.key,
@@ -340,6 +319,34 @@ class AndroidInAppWebViewWidget extends PlatformInAppWebViewWidget {
             );
           },
       onCreatePlatformView: (PlatformViewCreationParams params) {
+        // The creation params are only consumed here, when the native view is
+        // created. Computing them in build() serialized the whole settings
+        // object on every rebuild of the parent widget.
+        final initialSettings =
+            this.params.initialSettings ?? InAppWebViewSettings();
+        _inferInitialSettings(initialSettings);
+
+        final Map<String, dynamic> settingsMap =
+            (this.params.initialSettings != null
+                ? initialSettings.toMap()
+                : null) ??
+            // ignore: deprecated_member_use_from_same_package
+            this.params.initialOptions?.toMap() ??
+            initialSettings.toMap();
+
+        final Map<String, dynamic> pullToRefreshSettings =
+            this.params.pullToRefreshController?.params.settings.toMap() ??
+            // ignore: deprecated_member_use_from_same_package
+            this.params.pullToRefreshController?.params.options.toMap() ??
+            PullToRefreshSettings(enabled: false).toMap();
+
+        final useHybridComposition =
+            (this.params.initialSettings != null
+                ? initialSettings.useHybridComposition
+                // ignore: deprecated_member_use_from_same_package
+                : this.params.initialOptions?.android.useHybridComposition) ??
+            true;
+
         return _createAndroidViewController(
             hybridComposition: useHybridComposition,
             id: params.id,

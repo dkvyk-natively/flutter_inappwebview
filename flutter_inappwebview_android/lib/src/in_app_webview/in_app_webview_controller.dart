@@ -105,6 +105,7 @@ class AndroidInAppWebViewController extends PlatformInAppWebViewController
     }
 
     this._init(params);
+    _sendOptionalEventSubscriptions();
   }
 
   static final AndroidInAppWebViewController _staticValue =
@@ -188,6 +189,30 @@ class AndroidInAppWebViewController extends PlatformInAppWebViewController
         }
       }
     }
+  }
+
+  /// Tells the native side which high-frequency events (scroll, over-scroll,
+  /// zoom, content size) have a Dart callback, so it can skip sending the
+  /// others instead of posting a platform message on every frame.
+  ///
+  /// Sent every time a controller is created for a native WebView, including
+  /// when a widget adopts a headless or keep-alive WebView with different
+  /// callbacks. Conditions mirror the ones in [handleMethod].
+  void _sendOptionalEventSubscriptions() {
+    final params = webviewParams;
+    if (id == null || params == null || _inAppBrowser != null) return;
+    final events = <String>[
+      if (params.onScrollChanged != null) "onScrollChanged",
+      if (params.onOverScrolled != null) "onOverScrolled",
+      if (params.onZoomScaleChanged != null ||
+          // ignore: deprecated_member_use_from_same_package
+          params.androidOnScaleChanged != null)
+        "onZoomScaleChanged",
+      if (params.onContentSizeChanged != null) "onContentSizeChanged",
+    ];
+    channel
+        ?.invokeMethod("setOptionalEventSubscriptions", {"events": events})
+        .catchError((_) => null);
   }
 
   _debugLog(String method, dynamic args) {
